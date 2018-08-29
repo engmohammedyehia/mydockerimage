@@ -51,6 +51,8 @@ RUN echo "xdebug.remote_handler=dbgp" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.remote_port=9005" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.remote_autostart=1" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.remote_connect_back=0" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
+RUN echo "xdebug.profiler_enable=1" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
+RUN echo "xdebug.profiler_output_dir=/var/www/html/data/profiler" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.idekey=PHPSTORM" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.force_display_errors=1" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 
