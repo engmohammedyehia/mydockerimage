@@ -33,6 +33,11 @@ RUN echo "extension=/usr/lib/php/20170718/redis.so" > /etc/php/7.2/mods-availabl
 RUN ln -sf /etc/php/7.2/mods-available/redis.ini /etc/php/7.2/fpm/conf.d/20-redis.ini
 RUN ln -sf /etc/php/7.2/mods-available/redis.ini /etc/php/7.2/cli/conf.d/20-redis.ini
 
+RUN pecl install igbinary
+RUN echo "extension=/usr/lib/php/20170718/igbinary.so" > /etc/php/7.2/mods-available/igbinary.ini
+RUN ln -sf /etc/php/7.2/mods-available/igbinary.ini /etc/php/7.2/fpm/conf.d/20-igbinary.ini
+RUN ln -sf /etc/php/7.2/mods-available/igbinary.ini /etc/php/7.2/cli/conf.d/20-igbinary.ini
+
 # install composer
 RUN php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
     && rm -rf /var/lib/apt/lists/*
@@ -51,6 +56,7 @@ RUN echo "xdebug.remote_handler=dbgp" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.remote_port=9005" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.remote_autostart=1" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.remote_connect_back=0" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
+RUN echo "xdebug.remote_host=host.docker.internal" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.profiler_enable=1" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.profiler_output_dir=/var/www/html/data/profiler" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
 RUN echo "xdebug.idekey=PHPSTORM" >> /etc/php/7.2/fpm/conf.d/20-xdebug.ini
