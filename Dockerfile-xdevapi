@@ -1,0 +1,69 @@
+FROM ubuntu:18.10
+
+MAINTAINER Mohammed Yehia <firefoxegy@gmail.com>
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+
+# update the system
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+
+# install common packages
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libprotobuf-dev libboost-dev openssl protobuf-compiler nano wget curl vim zip unzip git software-properties-common locales
+
+# locales to UTF8
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+# install nginx
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y nginx
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+
+# install php7.2 and all required extensions
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y php7.2 php7.2-mysql php7.2-curl php7.2-json php7.2-gd php7.2-intl php-pear php-imagick php7.2-imap php7.2-memcached  php7.2-pspell php7.2-recode php7.2-sqlite3 php7.2-tidy php7.2-xmlrpc php7.2-xsl php7.2-mbstring php7.2-bcmath php7.2-dev php7.2-fpm php-gettext libz-dev
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update
+
+RUN pecl channel-update pecl.php.net
+RUN pecl install mysql_xdevapi
+RUN echo "extension=mysql_xdevapi.so" > /etc/php/7.2/mods-available/mysql_xdevapi.ini
+RUN ln -s /etc/php/7.2/mods-available/mysql_xdevapi.ini /etc/php/7.2/cli/conf.d/20-mysql_xdevapi.ini
+RUN ln -s /etc/php/7.2/mods-available/mysql_xdevapi.ini /etc/php/7.2/fpm/conf.d/20-mysql_xdevapi.ini
+
+RUN wget https://repo.mysql.com/apt/ubuntu/pool/mysql-apt-config/m/mysql-apt-config/mysql-apt-config_0.8.10-1_all.deb
+RUN dpkg -i mysql-apt-config_0.8.10-1_all.deb
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+RUN apt-get install -y mysql-apt-config
+RUN apt-get install -y mysql-shell
+
+# install composer
+RUN php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer \
+    && rm -rf /var/lib/apt/lists/*
+
+# copy the nginx configuration
+ADD default.conf   /etc/nginx/sites-available/default
+
+# add ssl certificates to use with nginx
+RUN mkdir /etc/nginx/ssl
+ADD localhost.crt   /etc/nginx/ssl/localhost.crt
+ADD localhost.key   /etc/nginx/ssl/localhost.key
+
+# Increase memory limit for php, upload limit and some other tweeks
+RUN sed -i -e "s/memory_limit\s*=\s*128M/memory_limit = 512M/g" /etc/php/7.2/fpm/php.ini
+RUN sed -i -e "s/;\s*max_input_vars\s*=\s*1000/max_input_vars = 1000/g" /etc/php/7.2/fpm/php.ini
+RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 200M/g" /etc/php/7.2/fpm/php.ini
+RUN sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 201M/g" /etc/php/7.2/fpm/php.ini
+
+# Cleanup
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+EXPOSE 80 443
+
+COPY start.sh .
+WORKDIR .
+RUN chmod +x start.sh
+ENTRYPOINT ["/start.sh"]
+CMD ["nginx", "-g", "daemon off;"]
+WORKDIR /var/www/html
